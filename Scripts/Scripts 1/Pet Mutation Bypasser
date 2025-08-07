@@ -19,7 +19,7 @@ blur.Size = 25
 
 -- Script to load after loading screen
 local scriptToRun = [[
-loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_ID"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/SkyeMozScriptzHub/ZenoMozRobloxScriptz/refs/heads/main/Scripts/Scripts%201/Unknown%2019b9"))()
 ]]
 
 -- GUI setup
