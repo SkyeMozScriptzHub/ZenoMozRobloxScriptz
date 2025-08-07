@@ -1,0 +1,226 @@
+-- Full ZenoMoz Loading Screen GUI (Final with Glow Fix + Outro Wait)
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local Lighting = game:GetService("Lighting")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Remove old UI/blur
+local existing = playerGui:FindFirstChild("ZenoLoadingUI")
+if existing then existing:Destroy() end
+local oldBlur = Lighting:FindFirstChildWhichIsA("BlurEffect")
+if oldBlur then oldBlur:Destroy() end
+
+-- Blur
+local blur = Instance.new("BlurEffect", Lighting)
+blur.Size = 25
+
+-- Script to load after loading screen
+local scriptToRun = [[
+loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_ID"))()
+]]
+
+-- GUI setup
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "ZenoLoadingUI"
+screenGui.ResetOnSpawn = false
+
+-- Sounds
+local clickSound = Instance.new("Sound", screenGui)
+clickSound.SoundId = "rbxassetid://4499400560"
+clickSound.Volume = 1
+
+local introSound = Instance.new("Sound", screenGui)
+introSound.SoundId = "rbxassetid://8486683243"
+introSound.Volume = 1
+introSound:Play()
+
+-- Main Frame
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.6, 0)
+mainFrame.Size = UDim2.new(0, 0, 0, 0)
+mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Visible = true
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+
+-- Glow Stroke
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 1
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Transparency = 0.3
+stroke.LineJoinMode = Enum.LineJoinMode.Round
+stroke.Enabled = true
+
+-- Glow Gradient
+local glow = Instance.new("UIGradient", stroke)
+glow.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+	ColorSequenceKeypoint.new(0.5, Color3.new(1, 1, 1)),
+	ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
+}
+glow.Transparency = NumberSequence.new{
+	NumberSequenceKeypoint.new(0, 1),
+	NumberSequenceKeypoint.new(0.5, 0.5),
+	NumberSequenceKeypoint.new(1, 1)
+}
+
+-- Rainbow rare outline
+if math.random(1, 10) == 1 then
+	glow.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+		ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255,255,0)),
+		ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0,255,0)),
+		ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0,255,255)),
+		ColorSequenceKeypoint.new(0.8, Color3.fromRGB(0,0,255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,255))
+	}
+end
+
+-- Avatar
+local avatar = Instance.new("ImageLabel", mainFrame)
+avatar.Size = UDim2.new(0, 100, 0, 100)
+avatar.Position = UDim2.new(0, 15, 0, 15)
+avatar.BackgroundTransparency = 1
+avatar.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+
+-- Name + Display Name
+local nameText = Instance.new("TextLabel", mainFrame)
+nameText.Position = UDim2.new(0, 130, 0, 25)
+nameText.Size = UDim2.new(0, 250, 0, 50)
+nameText.Text = "@" .. player.Name .. "\n" .. (player.DisplayName or player.Name)
+nameText.Font = Enum.Font.GothamMedium
+nameText.TextColor3 = Color3.new(1, 1, 1)
+nameText.BackgroundTransparency = 1
+nameText.TextSize = 18
+nameText.TextWrapped = true
+nameText.TextXAlignment = Enum.TextXAlignment.Left
+nameText.TextYAlignment = Enum.TextYAlignment.Top
+
+-- Game Icon
+local gameIcon = Instance.new("ImageLabel", mainFrame)
+gameIcon.Size = UDim2.new(0, 100, 0, 100)
+gameIcon.Position = UDim2.new(1, -115, 0, 15)
+gameIcon.BackgroundTransparency = 1
+
+-- Game Thumbnail
+local gameThumb = Instance.new("ImageLabel", mainFrame)
+gameThumb.Size = UDim2.new(0, 100, 0, 60)
+gameThumb.Position = UDim2.new(1, -115, 0, 120)
+gameThumb.BackgroundTransparency = 1
+
+-- Game Name
+local gameNameLabel = Instance.new("TextLabel", mainFrame)
+gameNameLabel.Position = UDim2.new(1, -250, 0, 120)
+gameNameLabel.Size = UDim2.new(0, 240, 0, 60)
+gameNameLabel.Text = "Loading..."
+gameNameLabel.Font = Enum.Font.GothamSemibold
+gameNameLabel.TextColor3 = Color3.new(1, 1, 1)
+gameNameLabel.TextScaled = true
+gameNameLabel.BackgroundTransparency = 1
+gameNameLabel.TextWrapped = true
+gameNameLabel.TextXAlignment = Enum.TextXAlignment.Center
+gameNameLabel.TextYAlignment = Enum.TextYAlignment.Top
+local constraint = Instance.new("UITextSizeConstraint", gameNameLabel)
+constraint.MaxTextSize = 26
+constraint.MinTextSize = 12
+
+-- Hub Label
+local hubLabel = Instance.new("TextLabel", mainFrame)
+hubLabel.Position = UDim2.new(0, 15, 1, -40)
+hubLabel.Size = UDim2.new(0, 200, 0, 20)
+hubLabel.Text = "ZenoMoz   |   Hub"
+hubLabel.Font = Enum.Font.GothamBold
+hubLabel.TextColor3 = Color3.new(1, 1, 1)
+hubLabel.TextSize = 16
+hubLabel.BackgroundTransparency = 1
+hubLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Loading Bar
+local barBG = Instance.new("Frame", mainFrame)
+barBG.Position = UDim2.new(0, 15, 1, -20)
+barBG.Size = UDim2.new(0, 250, 0, 10)
+barBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+barBG.BorderSizePixel = 0
+
+local barFill = Instance.new("Frame", barBG)
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.new(1, 1, 1)
+barFill.BorderSizePixel = 0
+
+-- Percent Label
+local percent = Instance.new("TextLabel", mainFrame)
+percent.Position = UDim2.new(0, 270, 1, -24)
+percent.Size = UDim2.new(0, 100, 0, 14)
+percent.Text = "0%"
+percent.Font = Enum.Font.Gotham
+percent.TextColor3 = Color3.new(1, 1, 1)
+percent.TextSize = 14
+percent.BackgroundTransparency = 1
+percent.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Buttons
+local function createCopyButton(text, pos, link)
+	local btn = Instance.new("TextButton", mainFrame)
+	btn.Size = UDim2.new(0, 100, 0, 25)
+	btn.Position = pos
+	btn.BackgroundTransparency = 1
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.TextSize = 14
+	btn.Font = Enum.Font.GothamBold
+	btn.Text = text
+	btn.MouseButton1Click:Connect(function()
+		clickSound:Play()
+		setclipboard(link)
+		btn.Text = "Copied ☑"
+		task.wait(1.2)
+		btn.Text = text
+	end)
+	return btn
+end
+
+createCopyButton("Discord", UDim2.new(1, -220, 1, -25), "https://discord.gg/vR6tht6F")
+createCopyButton("YouTube", UDim2.new(1, -110, 1, -25), "https://youtu.be/j4vwqCczoj4?si=eo1hbOR1KH6pETeH")
+
+-- Animate In (Rayfield-like bounce)
+TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	Size = UDim2.new(0, 500, 0, 220),
+	Position = UDim2.new(0.5, 0, 0.5, 0)
+}):Play()
+
+-- Load Game Info
+spawn(function()
+	local info = MarketplaceService:GetProductInfo(game.PlaceId)
+	gameNameLabel.Text = info.Name or "Unknown"
+	pcall(function()
+		gameIcon.Image = "rbxthumb://type=Asset&id=" .. tostring(info.AssetId or game.PlaceId) .. "&w=150&h=150"
+		gameThumb.Image = "rbxthumb://type=GameIcon&id=" .. game.PlaceId .. "&w=420&h=420"
+	end)
+end)
+
+-- Animate loading
+for i = 1, 100 do
+	barFill.Size = UDim2.new(i / 100, 0, 1, 0)
+	percent.Text = i .. "%"
+	task.wait(0.025)
+end
+
+-- Animate Out (WAIT until done)
+local outroTween = TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+	Size = UDim2.new(0.1, 0, 0.1, 0),
+	Position = UDim2.new(0.5, 0, 0.55, 0),
+	BackgroundTransparency = 1
+})
+outroTween:Play()
+outroTween.Completed:Wait()
+
+screenGui:Destroy()
+blur:Destroy()
+
+-- Execute main script
+loadstring(scriptToRun)()
